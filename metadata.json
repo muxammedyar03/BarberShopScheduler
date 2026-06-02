@@ -1,0 +1,6 @@
+{
+  "name": "Barber Queue CRM",
+  "description": "Интеллектуальная CRM-система для барберов: управление очередью, клиентская онлайн-запись, личный кабинет мастера, аналитика кассы и биллинг для владельца.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

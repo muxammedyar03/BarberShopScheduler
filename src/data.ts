@@ -1,0 +1,291 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+import { Barber, Appointment, Invoice, CashLog } from './types';
+
+export const INITIAL_BARBERS: Barber[] = [
+  {
+    id: 'b1',
+    name: 'Шохрух Каримов',
+    phone: '+998 (90) 123-45-67',
+    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200',
+    isActive: true,
+    isBlocked: false,
+    workingHours: { start: '09:00', end: '20:00' },
+    workingDays: [1, 2, 3, 4, 5, 6], // Пн - Сб
+    status: 'working',
+    monthlyFee: 150000, // UZS
+    billingDay: 10,
+    paymentStatus: 'paid',
+  },
+  {
+    id: 'b2',
+    name: 'Алишер Назаров',
+    phone: '+998 (93) 345-67-89',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200',
+    isActive: true,
+    isBlocked: false,
+    workingHours: { start: '10:00', end: '21:00' },
+    workingDays: [2, 3, 4, 5, 6, 7], // Вт - Вс
+    status: 'busy',
+    monthlyFee: 150000,
+    billingDay: 2,
+    paymentStatus: 'overdue',
+  },
+  {
+    id: 'b3',
+    name: 'Жасур Рустамов',
+    phone: '+998 (94) 987-65-43',
+    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=200',
+    isActive: true,
+    isBlocked: false,
+    workingHours: { start: '08:00', end: '18:00' },
+    workingDays: [1, 3, 5], // Пн, Ср, Пт
+    status: 'resting_or_sick',
+    monthlyFee: 150000,
+    billingDay: 25,
+    paymentStatus: 'paid',
+  },
+];
+
+// Today is 2026-06-02.
+const todayStr = '2026-06-02';
+
+export const INITIAL_APPOINTMENTS: Appointment[] = [
+  // Shoxrux - Today
+  {
+    id: 'a1',
+    barberId: 'b1',
+    clientName: 'Бекзод',
+    clientPhone: '+998 (99) 441-22-33',
+    startTime: '09:00',
+    endTime: '09:30',
+    date: todayStr,
+    category: 'adult',
+    status: 'completed',
+    paymentMethod: 'cash',
+    price: 60000,
+  },
+  {
+    id: 'a2',
+    barberId: 'b1',
+    clientName: 'Даврон (Сын)',
+    clientPhone: '+998 (90) 887-63-12',
+    startTime: '10:00',
+    endTime: '10:30',
+    date: todayStr,
+    category: 'child',
+    status: 'completed',
+    paymentMethod: 'click',
+    price: 45000,
+  },
+  {
+    id: 'a3',
+    barberId: 'b1',
+    clientName: 'Фарход ака',
+    clientPhone: '+998 (97) 112-23-34',
+    startTime: '11:00',
+    endTime: '11:45',
+    date: todayStr,
+    category: 'adult',
+    status: 'completed',
+    paymentMethod: 'card',
+    price: 70000,
+  },
+  {
+    id: 'a4',
+    barberId: 'b1',
+    clientName: 'Тимур',
+    clientPhone: '+998 (99) 556-43-21',
+    startTime: '12:00',
+    endTime: '12:30',
+    date: todayStr,
+    category: 'child',
+    status: 'active', // Currently working
+    price: 45000,
+  },
+  {
+    id: 'a5',
+    barberId: 'b1',
+    clientName: 'Сардорбек',
+    clientPhone: '+998 (93) 144-55-66',
+    startTime: '13:00',
+    endTime: '13:45',
+    date: todayStr,
+    category: 'adult',
+    status: 'pending', // Waiting in queue
+    price: 60000,
+  },
+  {
+    id: 'a6',
+    barberId: 'b1',
+    clientName: 'Мироншох',
+    clientPhone: '+998 (90) 777-11-22',
+    startTime: '14:30',
+    endTime: '15:00',
+    date: todayStr,
+    category: 'child',
+    status: 'pending',
+    price: 45000,
+  },
+  {
+    id: 'a7',
+    barberId: 'b1',
+    clientName: 'Отабек',
+    clientPhone: '+998 (95) 303-33-03',
+    startTime: '15:30',
+    endTime: '16:00',
+    date: todayStr,
+    category: 'adult',
+    status: 'pending',
+    price: 80000,
+  },
+
+  // Alisher - Today
+  {
+    id: 'a8',
+    barberId: 'b2',
+    clientName: 'Дониёр',
+    clientPhone: '+998 (91) 456-12-32',
+    startTime: '11:00',
+    endTime: '11:30',
+    date: todayStr,
+    category: 'adult',
+    status: 'completed',
+    paymentMethod: 'click',
+    price: 70000,
+  },
+  {
+    id: 'a9',
+    barberId: 'b2',
+    clientName: 'Улугбек',
+    clientPhone: '+998 (99) 812-74-45',
+    startTime: '12:00',
+    endTime: '12:45',
+    date: todayStr,
+    category: 'adult',
+    status: 'skipped',
+    price: 80000,
+  },
+  {
+    id: 'a10',
+    barberId: 'b2',
+    clientName: 'Русланчик',
+    clientPhone: '+998 (90) 412-51-25',
+    startTime: '13:30',
+    endTime: '14:00',
+    date: todayStr,
+    category: 'child',
+    status: 'pending',
+    price: 50000,
+  },
+];
+
+export const INITIAL_INVOICES: Invoice[] = [
+  {
+    id: 'inv-1',
+    barberId: 'b1',
+    barberName: 'Шохрух Каримов',
+    amount: 150000,
+    issueDate: '2026-05-10',
+    dueDate: '2026-05-17',
+    status: 'paid',
+  },
+  {
+    id: 'inv-2',
+    barberId: 'b2',
+    barberName: 'Алишер Назаров',
+    amount: 150000,
+    issueDate: '2026-05-02',
+    dueDate: '2026-05-09',
+    status: 'overdue', // Hasn't paid, bill was due May 9th
+  },
+  {
+    id: 'inv-3',
+    barberId: 'b3',
+    barberName: 'Жасур Рустамов',
+    amount: 150000,
+    issueDate: '2026-05-25',
+    dueDate: '2026-06-01',
+    status: 'paid',
+  },
+];
+
+export const INITIAL_LOGS: CashLog[] = [
+  // Income from service cuts
+  {
+    id: 'l1',
+    barberId: 'b1',
+    type: 'income',
+    amount: 60000,
+    category: 'Стрижка (Взрослый)',
+    date: todayStr,
+    description: 'Взрослая стрижка + укладка, клиент Бекзод',
+  },
+  {
+    id: 'l2',
+    barberId: 'b1',
+    type: 'income',
+    amount: 45000,
+    category: 'Стрижка (Детский)',
+    date: todayStr,
+    description: 'Детская стрижка, клиент Даврон',
+  },
+  {
+    id: 'l3',
+    barberId: 'b1',
+    type: 'income',
+    amount: 70000,
+    category: 'Стрижка (Взрослый)',
+    date: todayStr,
+    description: 'Стрижка бороды + мытье головы, Фарход ака',
+  },
+  {
+    id: 'l4',
+    barberId: 'b2',
+    type: 'income',
+    amount: 70000,
+    category: 'Стрижка (Взрослый)',
+    date: todayStr,
+    description: 'Комплексная стрижка, Дониёр',
+  },
+  // Expenses (расходы)
+  {
+    id: 'l5',
+    barberId: 'b1',
+    type: 'expense',
+    amount: 25000,
+    category: 'Расходные материалы',
+    date: todayStr,
+    description: 'Покупка одноразовых воротничков и лезвий',
+  },
+  {
+    id: 'l6',
+    barberId: 'b1',
+    type: 'expense',
+    amount: 40000,
+    category: 'Косметика',
+    date: '2026-06-01',
+    description: 'Масло для бороды и матовый воск',
+  },
+  {
+    id: 'l7',
+    barberId: 'b2',
+    type: 'expense',
+    amount: 15000,
+    category: 'Инструменты',
+    date: '2026-06-01',
+    description: 'Заточка опасной бритвы',
+  },
+  {
+    id: 'l8',
+    barberId: 'b3',
+    type: 'expense',
+    amount: 50000,
+    category: 'Реклама',
+    date: '2026-05-30',
+    description: 'Продвижение профиля в Instagram',
+  },
+];
