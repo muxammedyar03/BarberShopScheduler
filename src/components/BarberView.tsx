@@ -25,6 +25,7 @@ import {
   BarChart2,
   Trash2
 } from 'lucide-react';
+import { auth, db, showToast } from '../lib/firebase';
 import { Barber, Appointment, CashLog, PaymentMethod, ClientCategory, BarberStatus } from '../types';
 
 interface BarberViewProps {
@@ -72,14 +73,6 @@ export default function BarberView({
   // Active workflow checkout states
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
   const [checkoutAppointment, setCheckoutAppointment] = useState<Appointment | null>(null);
-
-  // Notifications
-  const [toastMsg, setToastMsg] = useState<string | null>(null);
-
-  const showToast = (msg: string) => {
-    setToastMsg(msg);
-    setTimeout(() => setToastMsg(null), 4000);
-  };
 
   if (!activeBarber) {
     return (
@@ -351,14 +344,6 @@ export default function BarberView({
   return (
     <div className="space-y-6">
       
-      {/* Toast Notification */}
-      {toastMsg && (
-        <div className="fixed top-4 right-4 z-50 flex items-center gap-2 bg-[#0d1224] border border-cyan-400/30 backdrop-blur-md font-medium px-5 py-3 rounded-xl shadow-lg text-white">
-          <AlertCircle className="w-4 h-4 text-cyan-400" />
-          <span>{toastMsg}</span>
-        </div>
-      )}
-
       {/* HEADER: Login simulator and instant availability status switch */}
       <div className="bg-white/5 p-5 rounded-2xl border border-white/10 shadow-xl backdrop-blur-xl flex flex-col md:flex-row md:items-center justify-between gap-5 relative z-10">
         
@@ -438,7 +423,7 @@ export default function BarberView({
       </div>
 
       {/* SUB TAB NAVIGATION BAR */}
-      <div className="flex border-b border-white/10 gap-6 relative z-10">
+      <div className="flex border-b border-white/10 gap-6 relative z-10 overflow-x-auto whitespace-nowrap scrollbar-none pb-0.5 -mx-4 px-4 sm:mx-0 sm:px-0">
         {[
           { id: 'queue', label: 'Очередь', icon: Users },
           { id: 'dashboard', label: 'Касса и Финансы', icon: TrendingUp },
@@ -451,7 +436,7 @@ export default function BarberView({
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`flex items-center gap-2 pb-3 text-sm font-bold transition border-b-2 relative -mb-[2px] cursor-pointer ${
+              className={`flex-shrink-0 flex items-center gap-2 pb-3 text-sm font-bold transition border-b-2 relative -mb-[2px] cursor-pointer ${
                 isSelected 
                   ? 'border-cyan-400 text-cyan-400' 
                   : 'border-transparent text-slate-400 hover:text-slate-200'
@@ -1056,11 +1041,16 @@ export default function BarberView({
 
       {/* --- MODAL: RECORD CLIENT BOOKING MANUAL --- */}
       {showAddQueueModal && (
-        <div className="fixed inset-0 bg-black/75 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/75 backdrop-blur-md z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
           <form 
             onSubmit={handleAddNewQueue}
-            className="bg-[#121629] rounded-2xl border border-white/15 shadow-2xl max-w-sm w-full overflow-hidden text-slate-100"
+            className="bg-[#121629] border-t sm:border border-white/15 rounded-t-3xl sm:rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden text-slate-100 max-h-[90vh] overflow-y-auto"
           >
+            {/* Native Sheet Pull Bar handle display on mobile phone devices */}
+            <div className="flex justify-center py-3 sm:hidden">
+              <div className="w-12 h-1 bg-white/20 rounded-full"></div>
+            </div>
+
             <div className="bg-white/5 border-b border-white/10 p-5">
               <h3 className="text-base font-bold text-white font-display">Записать клиента в очередь</h3>
               <p className="text-xs text-slate-400 mt-1">Добавление записи во временную сетку</p>
@@ -1165,8 +1155,13 @@ export default function BarberView({
 
       {/* --- MODAL: WORKSHOP CHECKOUT & STOP SERVICE (Tolov turi) --- */}
       {showCheckoutModal && checkoutAppointment && (
-        <div className="fixed inset-0 bg-black/75 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-[#121629] rounded-2xl border border-white/15 shadow-2xl max-w-sm w-full overflow-hidden text-slate-100">
+        <div className="fixed inset-0 bg-black/75 backdrop-blur-md z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="bg-[#121629] border-t sm:border border-white/15 rounded-t-3xl sm:rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden text-slate-100 max-h-[90vh] overflow-y-auto">
+            {/* Native Sheet Pull Bar handle display on mobile phone devices */}
+            <div className="flex justify-center py-3 sm:hidden">
+              <div className="w-12 h-1 bg-white/20 rounded-full"></div>
+            </div>
+
             <div className="bg-white/5 border-b border-white/10 p-5">
               <h3 className="text-base font-bold text-white font-display">Оплата и Закрытие чека</h3>
               <p className="text-xs text-slate-400 mt-1">Клиент: {checkoutAppointment.clientName}</p>

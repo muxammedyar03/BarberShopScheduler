@@ -23,6 +23,7 @@ import {
   Search,
   Plus
 } from 'lucide-react';
+import { auth, db, showToast } from '../lib/firebase';
 import { Barber, Invoice, Appointment, CashLog } from '../types';
 
 interface OwnerViewProps {
@@ -65,21 +66,11 @@ export default function OwnerView({
   // Interactive selected barber for detailed view
   const [selectedBarberDetail, setSelectedBarberDetail] = useState<Barber | null>(null);
 
-  // Notification helper
-  const [notification, setNotification] = useState<{ message: string; type: 'success' | 'info' | 'error' } | null>(null);
-
-  const triggerNotification = (message: string, type: 'success' | 'info' | 'error' = 'success') => {
-    setNotification({ message, type });
-    setTimeout(() => {
-      setNotification(null);
-    }, 4500);
-  };
-
   // 1. Add Barber handler
   const handleAddBarber = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newBarberName || !newBarberPhone) {
-      triggerNotification('Пожалуйста, заполните имя и телефон барбера', 'error');
+      showToast('Пожалуйста, заполните имя и телефон барбера', 'error');
       return;
     }
 
@@ -111,7 +102,7 @@ export default function OwnerView({
     setNewBarberFee(150000);
     setNewBarberBillingDay(10);
 
-    triggerNotification(`Ассистент: Барбер ${newBarber.name} успешно добавлен!`);
+    showToast(`Ассистент: Барбер ${newBarber.name} успешно добавлен!`);
   };
 
   // 2. Delete Barber handler
@@ -121,7 +112,7 @@ export default function OwnerView({
       if (selectedBarberDetail?.id === id) {
         setSelectedBarberDetail(null);
       }
-      triggerNotification(`Барбер ${name} успешно удален из базы`, 'info');
+      showToast(`Барбер ${name} успешно удален из базы`, 'info');
     }
   };
 
@@ -130,7 +121,7 @@ export default function OwnerView({
     const updated = barbers.map(b => {
       if (b.id === id) {
         const nextBlocked = !b.isBlocked;
-        triggerNotification(
+        showToast(
           nextBlocked ? `Барбер ${b.name} заблокирован!` : `Барбер ${b.name} разблокирован!`,
           nextBlocked ? 'error' : 'success'
         );
@@ -151,7 +142,7 @@ export default function OwnerView({
     const updated = barbers.map(b => {
       if (b.id === id) {
         const nextActive = !b.isActive;
-        triggerNotification(
+        showToast(
           nextActive ? `Барбер ${b.name} активирован в системе!` : `Барбер ${b.name} деактивирован!`,
           nextActive ? 'success' : 'info'
         );
@@ -171,7 +162,7 @@ export default function OwnerView({
   const handleCreateInvoice = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedBarberId) {
-      triggerNotification('Выберите барбера для выставления счета', 'error');
+      showToast('Выберите барбера для выставления счета', 'error');
       return;
     }
 
@@ -197,7 +188,7 @@ export default function OwnerView({
     }
 
     setShowInvoiceModal(false);
-    triggerNotification(`Создан инвойс #${newInvoice.id} на сумму ${newInvoice.amount.toLocaleString('ru-RU')} UZS для ${targetBarber.name}`);
+    showToast(`Создан инвойс #${newInvoice.id} на сумму ${newInvoice.amount.toLocaleString('ru-RU')} UZS для ${targetBarber.name}`);
   };
 
   // 6. Send / Dispatch Invoice ("Отправить инвойс" / invoice jo'natish)
@@ -206,7 +197,7 @@ export default function OwnerView({
     if (!inv) return;
     
     // Simulate high-fidelity email/SMS broadcast
-    triggerNotification(`📧 Инвойс #${invoiceId} на сумму ${inv.amount.toLocaleString()} UZS успешно отправлен барберу ${inv.barberName}!`, 'success');
+    showToast(`📧 Инвойс #${invoiceId} на сумму ${inv.amount.toLocaleString()} UZS успешно отправлен барберу ${inv.barberName}!`, 'success');
   };
 
   // 7. Manually toggle Invoice standard state (simulates payments received)
@@ -228,7 +219,7 @@ export default function OwnerView({
       }
     }
 
-    triggerNotification(`Инвойс #${invoiceId} помечен как оплаченный! Полная сумма зачислена.`);
+    showToast(`Инвойс #${invoiceId} помечен как оплаченный! Полная сумма зачислена.`);
   };
 
   const toggleDayOfWeekSelection = (day: number) => {
@@ -269,17 +260,6 @@ export default function OwnerView({
   return (
     <div className="space-y-6">
       
-      {/* Toast Notification */}
-      {notification && (
-        <div className={`fixed top-4 right-4 z-50 flex items-center gap-3 px-5 py-3 rounded-lg shadow-xl border text-white transition-all duration-300 transform translate-y-0 ${
-          notification.type === 'success' ? 'bg-emerald-600 border-emerald-500' :
-          notification.type === 'error' ? 'bg-rose-600 border-rose-500' :
-          'bg-slate-800 border-slate-700'
-        }`}>
-          <span>{notification.message}</span>
-        </div>
-      )}
-
       {/* Stats Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         
@@ -603,7 +583,7 @@ export default function OwnerView({
               <button 
                 onClick={() => {
                   if (barbers.length === 0) {
-                    triggerNotification('Добавьте сначала хотя бы одного барбера', 'error');
+                    showToast('Добавьте сначала хотя бы одного барбера', 'error');
                     return;
                   }
                   setSelectedBarberId(barbers[0].id);
@@ -715,13 +695,18 @@ export default function OwnerView({
 
       {/* --- MODAL: ADD BARBER --- */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
           <form 
             onSubmit={handleAddBarber}
-            className="bg-white rounded-2xl border border-slate-100 shadow-2xl max-w-md w-full overflow-hidden"
+            className="bg-white border-t sm:border border-slate-100 rounded-t-3xl sm:rounded-2xl shadow-2xl max-w-md w-full overflow-hidden max-h-[90vh] overflow-y-auto text-slate-800"
           >
+            {/* Native Sheet Pull Bar handle display on mobile phone devices */}
+            <div className="flex justify-center py-2.5 sm:hidden bg-slate-900 border-b border-slate-800">
+              <div className="w-12 h-1 bg-white/20 rounded-full"></div>
+            </div>
+
             <div className="bg-slate-900 text-white p-5">
-              <h3 className="text-base font-bold">Добавление нового барбера</h3>
+              <h3 className="text-base font-bold">Добавление нового  барбера</h3>
               <p className="text-xs text-slate-400 mt-1">Заполните анкету для предоставления доступа к CRM</p>
             </div>
 
@@ -870,11 +855,16 @@ export default function OwnerView({
 
       {/* --- MODAL: GENERATE INVOICE --- */}
       {showInvoiceModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
           <form 
             onSubmit={handleCreateInvoice}
-            className="bg-white rounded-2xl border border-slate-100 shadow-2xl max-w-sm w-full overflow-hidden"
+            className="bg-white border-t sm:border border-slate-100 rounded-t-3xl sm:rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden max-h-[90vh] overflow-y-auto text-slate-800"
           >
+            {/* Native Sheet Pull Bar handle display on mobile phone devices */}
+            <div className="flex justify-center py-2.5 sm:hidden bg-slate-900 border-b border-slate-800">
+              <div className="w-12 h-1 bg-white/20 rounded-full"></div>
+            </div>
+
             <div className="bg-slate-900 text-white p-5">
               <h3 className="text-base font-bold">Выставить новый инвойс</h3>
               <p className="text-xs text-slate-400 mt-1">Генерация квитанции за обслуживание в системе</p>

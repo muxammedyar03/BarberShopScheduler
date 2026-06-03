@@ -104,7 +104,7 @@ export default function ClientView({
       id: 'app-' + Date.now(),
       barberId: activeBarber.id,
       clientName,
-      clientPhone,
+      clientPhone: clientPhone.startsWith('+998') ? clientPhone : `+998 ${clientPhone}`,
       startTime: selectedTimeSlot,
       endTime: endTimeStr,
       date: todayStr,
@@ -154,10 +154,10 @@ export default function ClientView({
           </p>
         </div>
 
-        {/* Master Selector grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {/* Master Selector - Swipeable horizontal carousel on mobile, clean columns on desktop */}
+        <div className="flex overflow-x-auto pb-2 gap-4 scrollbar-none snap-x sm:grid sm:grid-cols-3 sm:overflow-visible sm:pb-0">
           {activeBarbers.length === 0 ? (
-            <div className="sm:col-span-3 text-center py-6 text-sm text-slate-400 bg-white/5 border border-white/5 rounded-xl">
+            <div className="sm:col-span-3 text-center py-6 text-sm text-slate-400 bg-white/5 border border-white/5 rounded-xl w-full">
               В данный момент нет доступных активных барберов на смене.
             </div>
           ) : (
@@ -172,7 +172,7 @@ export default function ClientView({
                 <div
                   key={barber.id}
                   onClick={() => setSelectedBarberId(barber.id)}
-                  className={`p-4 rounded-xl border transition-all duration-300 cursor-pointer relative overflow-hidden flex items-center gap-3 ${
+                  className={`snap-start min-w-[270px] sm:min-w-0 flex-shrink-0 p-4 rounded-xl border transition-all duration-300 cursor-pointer relative overflow-hidden flex items-center gap-3 ${
                     isSelected 
                       ? 'border-cyan-400 bg-cyan-400/10 shadow-lg shadow-cyan-450/10' 
                       : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
@@ -335,7 +335,7 @@ export default function ClientView({
             <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 text-xs text-amber-300 space-y-1.5 shadow-lg backdrop-blur-sm">
               <h5 className="font-extrabold flex items-center gap-1.5"><Sliders className="w-4 h-4 text-amber-400" /> Важная информация:</h5>
               <p>Пожалуйста, приходите за 5 минут до забронированного времени.</p>
-              <p>Оплата производится на месте у барбера наличными деньгами (Naqt), картой (Uzcard/Humo) или переводом Click.</p>
+              <p>Оплата производится на месте у барбера наличными деньгами (Naqt), картой (Uzcard/Humo) или Click.</p>
             </div>
 
           </div>
@@ -345,14 +345,19 @@ export default function ClientView({
 
       {/* --- MODAL: CLIENT RESERVATION SIGN-UP --- */}
       {showBookingModal && activeBarber && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-[#0b0f1d] border border-white/10 rounded-3xl shadow-2xl max-w-sm w-full overflow-hidden backdrop-blur-2xl">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="bg-[#0b0f1d] border-t sm:border border-white/10 rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-sm w-full overflow-hidden backdrop-blur-2xl max-h-[90vh] overflow-y-auto transform transition-transform duration-300">
             
+            {/* Native Bottom Sheet handle decoration on Mobile screen */}
+            <div className="flex justify-center py-3 sm:hidden">
+              <div className="w-12 h-1 bg-white/20 rounded-full"></div>
+            </div>
+
             {bookingSuccess ? (
               <div className="p-8 text-center space-y-3">
                 <CheckCircle2 className="w-14 h-14 text-emerald-400 mx-auto animate-bounce" />
                 <h3 className="text-lg font-bold text-white font-display">Запись успешно создана!</h3>
-                <p className="text-sm text-slate-300">
+                <p className="text-sm text-slate-305">
                   Вы записались к мастеру <b>{activeBarber.name}</b> на сегодня в <b>{selectedTimeSlot}</b>.
                 </p>
                 <div className="text-xs bg-white/5 border border-white/10 py-2.5 rounded-xl text-slate-400 font-semibold font-mono">
@@ -379,7 +384,7 @@ export default function ClientView({
                       placeholder="Например, Бекзод"
                       value={clientName}
                       onChange={(e) => setClientName(e.target.value)}
-                      className="w-full text-sm bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-white font-semibold focus:outline-none focus:border-cyan-400"
+                      className="w-full text-sm bg-white/5 border border-white/10 rounded-xl px-3 py-3 text-white font-semibold focus:outline-none focus:border-cyan-400"
                     />
                   </div>
 
@@ -387,14 +392,27 @@ export default function ClientView({
                     <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">
                       Номер телефона *
                     </label>
-                    <input
-                      type="tel"
-                      required
-                      placeholder="+998 (99) ..."
-                      value={clientPhone}
-                      onChange={(e) => setClientPhone(e.target.value)}
-                      className="w-full text-sm bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-white font-semibold focus:outline-none focus:border-cyan-400"
-                    />
+                    <div className="relative flex items-center">
+                      <span className="absolute left-3 text-xs font-bold text-slate-450 select-none flex items-center gap-1">
+                        <span>🇺🇿</span>
+                        <span>+998</span>
+                      </span>
+                      <input
+                        type="tel"
+                        required
+                        placeholder="(99) 777-77-77"
+                        value={clientPhone}
+                        onChange={(e) => {
+                          let val = e.target.value;
+                          // If client types +998 directly, strip it or handle beautifully
+                          if (val.startsWith('+998')) {
+                            val = val.substring(4).trim();
+                          }
+                          setClientPhone(val);
+                        }}
+                        className="w-full text-sm bg-white/5 border border-white/10 rounded-xl pl-20 pr-3 py-3 text-white font-semibold focus:outline-none focus:border-cyan-400"
+                      />
+                    </div>
                   </div>
 
                   <div>
@@ -405,7 +423,7 @@ export default function ClientView({
                       <button
                         type="button"
                         onClick={() => setClientCategory('adult')}
-                        className={`text-xs py-2 px-1.5 rounded-xl border text-center transition font-bold ${
+                        className={`text-xs py-3 px-1.5 rounded-xl border text-center transition font-bold cursor-pointer ${
                           clientCategory === 'adult'
                             ? 'bg-cyan-500/20 text-cyan-400 border-cyan-500/40'
                             : 'bg-white/5 text-slate-400 border-white/10 hover:bg-white/10'
@@ -417,7 +435,7 @@ export default function ClientView({
                       <button
                         type="button"
                         onClick={() => setClientCategory('child')}
-                        className={`text-xs py-2 px-1.5 rounded-xl border text-center transition font-bold ${
+                        className={`text-xs py-3 px-1.5 rounded-xl border text-center transition font-bold cursor-pointer ${
                           clientCategory === 'child'
                             ? 'bg-cyan-500/20 text-cyan-400 border-cyan-500/40'
                             : 'bg-white/5 text-slate-400 border-white/10 hover:bg-white/10'
@@ -430,17 +448,17 @@ export default function ClientView({
 
                 </div>
 
-                <div className="p-4 bg-white/5 border-t border-white/10 flex items-center justify-end gap-3">
+                <div className="p-4 bg-white/5 border-t border-white/10 flex items-center justify-end gap-3 pb-8 sm:pb-4">
                   <button
                     type="button"
                     onClick={() => setShowBookingModal(false)}
-                    className="text-xs text-slate-400 hover:text-white font-semibold py-2 px-4 cursor-pointer"
+                    className="text-xs text-slate-400 hover:text-white font-semibold py-2.5 px-4 cursor-pointer"
                   >
                     Отменить
                   </button>
                   <button
                     type="submit"
-                    className="bg-gradient-to-r from-cyan-400 to-blue-600 hover:from-cyan-500 hover:to-blue-700 text-[#0a0c14] font-bold text-xs py-2.5 px-6 rounded-xl transition-all cursor-pointer shadow-lg shadow-cyan-500/20"
+                    className="bg-gradient-to-r from-cyan-400 to-blue-600 hover:from-cyan-500 hover:to-blue-700 text-[#0a0c14] font-bold text-xs py-3 px-6 rounded-xl transition-all cursor-pointer shadow-lg shadow-cyan-500/20"
                   >
                     Записаться
                   </button>
