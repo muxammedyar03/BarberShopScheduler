@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -23,7 +25,7 @@ import {
   Search,
   Plus
 } from 'lucide-react';
-import { auth, db, showToast } from '../lib/firebase';
+import { showToast } from '@/lib/toast';
 import { Barber, Invoice, Appointment, CashLog } from '../types';
 
 interface OwnerViewProps {

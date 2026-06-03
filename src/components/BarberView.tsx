@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -25,7 +27,7 @@ import {
   BarChart2,
   Trash2
 } from 'lucide-react';
-import { auth, db, showToast } from '../lib/firebase';
+import { showToast } from '@/lib/toast';
 import { Barber, Appointment, CashLog, PaymentMethod, ClientCategory, BarberStatus } from '../types';
 
 interface BarberViewProps {
