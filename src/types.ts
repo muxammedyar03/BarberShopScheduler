@@ -26,6 +26,10 @@ export interface Barber {
   monthlyFee: number;    // USD or local currency, e.g., 200,000 UZS
   billingDay: number;    // Day of the month they should pay (1-28)
   paymentStatus: 'paid' | 'overdue';
+  city?: string;
+  district?: string;
+  address?: string;
+  rating?: number;
 }
 
 export interface Appointment {

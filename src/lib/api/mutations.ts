@@ -15,6 +15,10 @@ export function barberToBody(b: Barber) {
     monthly_fee: b.monthlyFee,
     billing_day: b.billingDay,
     payment_status: b.paymentStatus,
+    city: b.city ?? '',
+    district: b.district ?? '',
+    address: b.address ?? '',
+    rating: b.rating ?? 0,
   };
 }
 

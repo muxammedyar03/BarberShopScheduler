@@ -36,7 +36,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, user }: SidebarPr
   const handleLogout = async () => {
     await logoutSession();
     notifySessionChange();
-    router.push('/client');
+    router.push(user?.role === 'client' ? '/client/login' : '/login');
     router.refresh();
   };
 

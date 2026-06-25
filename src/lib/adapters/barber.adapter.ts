@@ -26,5 +26,9 @@ export function mapBarberFromDB(row: Record<string, unknown>): Barber {
     monthlyFee: Number(row.monthly_fee),
     billingDay: Number(row.billing_day),
     paymentStatus: row.payment_status as Barber['paymentStatus'],
+    city: row.city ? String(row.city) : '',
+    district: row.district ? String(row.district) : undefined,
+    address: row.address ? String(row.address) : undefined,
+    rating: Number(row.rating ?? 0),
   };
 }

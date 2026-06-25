@@ -95,3 +95,40 @@ export const api = {
     return api.post<DCollate<T>>(`/api/v1/collate/${resource}`, req);
   },
 };
+
+/** Browser-only BFF — same-origin /api/client/* with cookie auth */
+export const bff = {
+  async get<T>(path: string): Promise<T> {
+    const res = await fetch(path, { credentials: 'include', cache: 'no-store' });
+    return parseJSON<T>(res);
+  },
+  async post<T>(path: string, body?: unknown): Promise<T> {
+    const res = await fetch(path, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+      body: body === undefined ? undefined : JSON.stringify(body),
+      cache: 'no-store',
+    });
+    return parseJSON<T>(res);
+  },
+  async put<T>(path: string, body: unknown): Promise<T> {
+    const res = await fetch(path, {
+      method: 'PUT',
+      credentials: 'include',
+      headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      cache: 'no-store',
+    });
+    return parseJSON<T>(res);
+  },
+  async delete<T>(path: string): Promise<T> {
+    const res = await fetch(path, {
+      method: 'DELETE',
+      credentials: 'include',
+      headers: { Accept: 'application/json' },
+      cache: 'no-store',
+    });
+    return parseJSON<T>(res);
+  },
+};

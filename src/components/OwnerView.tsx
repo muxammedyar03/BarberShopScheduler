@@ -58,6 +58,8 @@ export default function OwnerView({
   const [newBarberDays, setNewBarberDays] = useState<number[]>([1, 2, 3, 4, 5, 6]);
   const [newBarberFee, setNewBarberFee] = useState(150000);
   const [newBarberBillingDay, setNewBarberBillingDay] = useState(10);
+  const [newBarberCity, setNewBarberCity] = useState('Ташкент');
+  const [newBarberAddress, setNewBarberAddress] = useState('');
 
   // Invoice generator state
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
@@ -88,7 +90,10 @@ export default function OwnerView({
       status: 'resting_or_sick',
       monthlyFee: Number(newBarberFee),
       billingDay: Number(newBarberBillingDay),
-      paymentStatus: 'paid'
+      paymentStatus: 'paid',
+      city: newBarberCity,
+      address: newBarberAddress,
+      rating: 0,
     };
 
     onUpdateBarbers([...barbers, newBarber]);
@@ -103,6 +108,8 @@ export default function OwnerView({
     setNewBarberDays([1, 2, 3, 4, 5, 6]);
     setNewBarberFee(150000);
     setNewBarberBillingDay(10);
+    setNewBarberCity('Ташкент');
+    setNewBarberAddress('');
 
     showToast(`Ассистент: Барбер ${newBarber.name} успешно добавлен!`);
   };
@@ -762,6 +769,32 @@ export default function OwnerView({
                   onChange={(e) => setNewBarberAvatar(e.target.value)}
                   className="w-full text-sm border border-slate-200 rounded-xl px-3 py-2.5 outline-indigo-500 text-slate-850 text-xs"
                 />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 tracking-wide uppercase mb-1">
+                    Город *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={newBarberCity}
+                    onChange={(e) => setNewBarberCity(e.target.value)}
+                    className="w-full text-sm border border-slate-200 rounded-xl px-3 py-2.5 outline-indigo-500 text-slate-850"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 tracking-wide uppercase mb-1">
+                    Адрес
+                  </label>
+                  <input
+                    type="text"
+                    value={newBarberAddress}
+                    onChange={(e) => setNewBarberAddress(e.target.value)}
+                    className="w-full text-sm border border-slate-200 rounded-xl px-3 py-2.5 outline-indigo-500 text-slate-850"
+                  />
+                </div>
               </div>
 
               {/* Working Hours */}

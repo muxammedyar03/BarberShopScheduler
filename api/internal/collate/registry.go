@@ -3,6 +3,7 @@ package collate
 // Resource defines allowlisted columns for safe dynamic SQL.
 type Resource struct {
 	Table       string
+	FromClause  string // optional full FROM (with joins); defaults to Table
 	Select      string // e.g. "SELECT * FROM barbers"
 	SearchExpr  string // ILIKE expression, e.g. "(name ILIKE $%d OR phone ILIKE $%d)"
 	Columns     map[string]ColumnDef
@@ -40,6 +41,7 @@ var Registry = map[string]Resource{
 			"is_active":       {DBColumn: "is_active", Kind: KindCheckbuttons},
 			"is_blocked":      {DBColumn: "is_blocked", Kind: KindCheckbuttons},
 			"monthly_fee":     {DBColumn: "monthly_fee", Kind: KindNumberRange},
+			"city":            {DBColumn: "city", Kind: KindCheckboxes},
 		},
 	},
 	"appointments": {

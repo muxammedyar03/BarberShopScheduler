@@ -28,3 +28,25 @@ export async function loginWithPassword(
 export async function logoutSession(): Promise<void> {
   await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
 }
+
+export async function registerClient(input: {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
+  city: string;
+  address: string;
+}): Promise<{ ok: true; user: SessionUser } | { ok: false; error: string }> {
+  const res = await fetch('/api/auth/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(input),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    return { ok: false, error: data.error ?? 'registration failed' };
+  }
+  return { ok: true, user: mapApiUser(data.user as ApiAuthUser) };
+}

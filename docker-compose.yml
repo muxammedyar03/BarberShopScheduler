@@ -11,7 +11,9 @@ services:
       - pgdata:/var/lib/postgresql/data
       - ./api/db/migrations/001_init.sql:/docker-entrypoint-initdb.d/001_init.sql:ro
       - ./api/db/migrations/002_users_auth.sql:/docker-entrypoint-initdb.d/002_users_auth.sql:ro
-      - ./api/db/seed_users.sql:/docker-entrypoint-initdb.d/003_seed_users.sql:ro
+      - ./api/db/migrations/003_client_features.sql:/docker-entrypoint-initdb.d/003_client_features.sql:ro
+      - ./api/db/migrations/003_client_features.sql:/docker-entrypoint-initdb.d/003_client_features.sql:ro
+      - ./api/db/seed_users.sql:/docker-entrypoint-initdb.d/004_seed_users.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U barber -d barber_queue"]
       interval: 5s

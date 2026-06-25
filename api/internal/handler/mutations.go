@@ -35,6 +35,10 @@ type barberBody struct {
 	MonthlyFee    int64           `json:"monthly_fee"`
 	BillingDay    int32           `json:"billing_day"`
 	PaymentStatus string          `json:"payment_status"`
+	City          string          `json:"city"`
+	District      string          `json:"district"`
+	Address       string          `json:"address"`
+	Rating        float64         `json:"rating"`
 }
 
 func (a *API) putBarber(w http.ResponseWriter, r *http.Request) {
@@ -48,10 +52,12 @@ func (a *API) putBarber(w http.ResponseWriter, r *http.Request) {
 		UPDATE barbers SET
 			name = $2, phone = $3, avatar = $4, is_active = $5, is_blocked = $6,
 			working_hours = $7, working_days = $8, status = $9,
-			monthly_fee = $10, billing_day = $11, payment_status = $12, updated_at = now()
+			monthly_fee = $10, billing_day = $11, payment_status = $12,
+			city = $13, district = $14, address = $15, rating = $16, updated_at = now()
 		WHERE id = $1`,
 		id, body.Name, body.Phone, body.Avatar, body.IsActive, body.IsBlocked,
 		body.WorkingHours, body.WorkingDays, body.Status, body.MonthlyFee, body.BillingDay, body.PaymentStatus,
+		body.City, body.District, body.Address, body.Rating,
 	)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, err.Error())
@@ -71,17 +77,19 @@ func (a *API) postBarber(w http.ResponseWriter, r *http.Request) {
 	}
 	ctx := r.Context()
 	_, err := a.pool.Exec(ctx, `
-		INSERT INTO barbers (id, name, phone, avatar, is_active, is_blocked, working_hours, working_days, status, monthly_fee, billing_day, payment_status)
-		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+		INSERT INTO barbers (id, name, phone, avatar, is_active, is_blocked, working_hours, working_days, status, monthly_fee, billing_day, payment_status, city, district, address, rating)
+		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
 		ON CONFLICT (id) DO UPDATE SET
 			name = EXCLUDED.name, phone = EXCLUDED.phone, avatar = EXCLUDED.avatar,
 			is_active = EXCLUDED.is_active, is_blocked = EXCLUDED.is_blocked,
 			working_hours = EXCLUDED.working_hours, working_days = EXCLUDED.working_days,
 			status = EXCLUDED.status, monthly_fee = EXCLUDED.monthly_fee,
 			billing_day = EXCLUDED.billing_day, payment_status = EXCLUDED.payment_status,
-			updated_at = now()`,
+			city = EXCLUDED.city, district = EXCLUDED.district, address = EXCLUDED.address,
+			rating = EXCLUDED.rating, updated_at = now()`,
 		body.ID, body.Name, body.Phone, body.Avatar, body.IsActive, body.IsBlocked,
 		body.WorkingHours, body.WorkingDays, body.Status, body.MonthlyFee, body.BillingDay, body.PaymentStatus,
+		body.City, body.District, body.Address, body.Rating,
 	)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, err.Error())

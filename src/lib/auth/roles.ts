@@ -10,10 +10,13 @@ export type NavItem = {
 /** Sidebar: faqat joriy rolga tegishli bo'limlar */
 export const NAV_BY_ROLE: Record<UserRole | 'guest', NavItem[]> = {
   guest: [
-    { id: 'client', href: '/client', label: 'Бронирование', roles: ['client'] },
+    { id: 'client', href: '/client/login', label: 'Вход клиента', roles: ['client'] },
   ],
   client: [
-    { id: 'client', href: '/client', label: 'Бронирование', roles: ['client'] },
+    { id: 'client', href: '/client', label: 'Поиск', roles: ['client'] },
+    { id: 'client-favorites', href: '/client/favorites', label: 'Избранное', roles: ['client'] },
+    { id: 'client-history', href: '/client/history', label: 'История', roles: ['client'] },
+    { id: 'client-profile', href: '/client/profile', label: 'Профиль', roles: ['client'] },
   ],
   barber: [
     { id: 'barber', href: '/barber', label: 'Панель мастера', roles: ['barber'] },

@@ -53,9 +53,17 @@ func Build(res Resource, q query.DQuery, extraWhere string, extraArgs []any) (co
 		switch {
 		case f.Name == "search" && f.String != nil && strings.TrimSpace(*f.String) != "":
 			pat := "%" + strings.TrimSpace(*f.String) + "%"
-			a := nextArg(b, pat)
-			b2 := nextArg(b, pat)
-			clauses = append(clauses, fmt.Sprintf(res.SearchExpr, a, b2))
+			placeholderCount := strings.Count(res.SearchExpr, "$%d")
+			if placeholderCount < 1 {
+				placeholderCount = 2
+			}
+			args := make([]any, placeholderCount)
+			placeholders := make([]any, placeholderCount)
+			for i := 0; i < placeholderCount; i++ {
+				placeholders[i] = nextArg(b, pat)
+			}
+			_ = args
+			clauses = append(clauses, fmt.Sprintf(res.SearchExpr, placeholders...))
 
 		case f.Checkboxes != nil && len(f.Checkboxes.Values) > 0:
 			col := def.DBColumn
@@ -125,7 +133,12 @@ func Build(res Resource, q query.DQuery, extraWhere string, extraArgs []any) (co
 	limitArg := nextArg(b, size)
 	offsetArg := nextArg(b, from)
 
-	countSQL = fmt.Sprintf("SELECT COUNT(*) FROM %s%s", res.Table, whereSQL)
+	fromSQL := res.Table
+	if res.FromClause != "" {
+		fromSQL = res.FromClause
+	}
+
+	countSQL = fmt.Sprintf("SELECT COUNT(*) FROM %s%s", fromSQL, whereSQL)
 	dataSQL = fmt.Sprintf("%s%s ORDER BY %s LIMIT $%d OFFSET $%d",
 		res.Select, whereSQL, order, limitArg, offsetArg)
 

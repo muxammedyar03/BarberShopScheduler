@@ -26,6 +26,7 @@ func New(coll *collate.Runner, c *cache.Store, pool *pgxpool.Pool) *API {
 func (a *API) Register(mux *http.ServeMux) {
 	mux.HandleFunc("GET /health", a.health)
 	mux.HandleFunc("POST /api/v1/auth/login", a.postLogin)
+	mux.HandleFunc("POST /api/v1/auth/register", a.postRegister)
 	mux.HandleFunc("GET /api/v1/auth/me", a.withAuth(a.getMe))
 	mux.HandleFunc("POST /api/v1/collate/{resource}", a.postCollate)
 	mux.HandleFunc("GET /api/v1/barbers/{id}", a.getBarber)
@@ -38,6 +39,21 @@ func (a *API) Register(mux *http.ServeMux) {
 	mux.HandleFunc("POST /api/v1/invoices", a.postInvoice)
 	mux.HandleFunc("PUT /api/v1/invoices/{id}", a.putInvoice)
 	mux.HandleFunc("POST /api/v1/cash_logs", a.postCashLog)
+
+	// Client discovery (authenticated clients)
+	mux.HandleFunc("POST /api/v1/client/barbers", a.withClient(a.getClientBarbers))
+	mux.HandleFunc("GET /api/v1/client/barbers/{barberId}/slots", a.withClient(a.getBarberSlots))
+	mux.HandleFunc("GET /api/v1/client/queue", a.withClient(a.getClientQueue))
+	mux.HandleFunc("POST /api/v1/client/appointments", a.withClient(a.postClientAppointment))
+	mux.HandleFunc("POST /api/v1/client/appointments/list", a.withClient(a.getClientAppointments))
+	mux.HandleFunc("POST /api/v1/client/favorites/list", a.withClient(a.getClientFavorites))
+	mux.HandleFunc("POST /api/v1/client/favorites", a.withClient(a.postClientFavorite))
+	mux.HandleFunc("DELETE /api/v1/client/favorites/{barberId}", a.withClient(a.deleteClientFavorite))
+	mux.HandleFunc("GET /api/v1/client/search-history", a.withClient(a.getClientSearchHistory))
+	mux.HandleFunc("POST /api/v1/client/search-history", a.withClient(a.postClientSearchHistory))
+	mux.HandleFunc("GET /api/v1/client/recent-barbers", a.withClient(a.getClientRecentBarbers))
+	mux.HandleFunc("GET /api/v1/client/profile", a.withClient(a.getClientProfile))
+	mux.HandleFunc("PUT /api/v1/client/profile", a.withClient(a.putClientProfile))
 }
 
 func (a *API) health(w http.ResponseWriter, r *http.Request) {
