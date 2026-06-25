@@ -7,3 +7,9 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# Firebase / AI Studio (loyiha endi faqat PostgreSQL)
+firebase-applet-config.json
+firebase-blueprint.json
+firestore.rules
+metadata.json

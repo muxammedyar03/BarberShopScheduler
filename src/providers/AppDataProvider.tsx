@@ -13,13 +13,15 @@ import type { DashboardData } from '@/lib/data/load-dashboard';
 import { refreshDashboardData } from '@/lib/data/load-dashboard';
 import { showToast } from '@/lib/toast';
 import type { SessionUser } from '@/lib/auth/session';
-import { getSession } from '@/lib/auth/session';
+import { fetchCurrentUser } from '@/lib/auth/client';
 import type { Appointment, Barber, CashLog, Invoice } from '@/types';
 
 type AppDataContextValue = DashboardData & {
   loading: boolean;
+  authReady: boolean;
   user: SessionUser | null;
   refresh: () => Promise<void>;
+  refreshUser: () => Promise<void>;
   handleUpdateBarberInfo: (updated: Barber) => Promise<void>;
   handleAddNewAppointment: (app: Appointment) => Promise<void>;
   handleUpdateAppointments: (newApps: Appointment[]) => Promise<void>;
@@ -40,13 +42,22 @@ export function AppDataProvider({
   const [data, setData] = useState(initial);
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState<SessionUser | null>(null);
+  const [authReady, setAuthReady] = useState(false);
+
+  const refreshUser = useCallback(async () => {
+    const next = await fetchCurrentUser();
+    setUser(next);
+    setAuthReady(true);
+  }, []);
 
   useEffect(() => {
-    const sync = () => setUser(getSession());
-    sync();
-    window.addEventListener('barber-session', sync);
-    return () => window.removeEventListener('barber-session', sync);
-  }, []);
+    refreshUser();
+    const onSession = () => {
+      void refreshUser();
+    };
+    window.addEventListener('barber-session', onSession);
+    return () => window.removeEventListener('barber-session', onSession);
+  }, [refreshUser]);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -100,13 +111,36 @@ export function AppDataProvider({
   const handleUpdateBarbers = useCallback(
     async (newBarbers: Barber[]) => {
       const prev = data.barbers;
-      if (newBarbers.length > prev.length) {
-        const added = newBarbers.filter((nb) => !prev.some((b) => b.id === nb.id));
-        for (const b of added) await mutations.upsertBarber(b);
-      } else {
-        for (const b of newBarbers) await mutations.updateBarber(b);
+      const prevIds = new Set(prev.map((b) => b.id));
+      const newIds = new Set(newBarbers.map((b) => b.id));
+
+      const removed = prev.filter((b) => !newIds.has(b.id));
+      const added = newBarbers.filter((b) => !prevIds.has(b.id));
+
+      try {
+        for (const b of removed) {
+          await mutations.deleteBarber(b.id);
+        }
+        for (const b of added) {
+          await mutations.upsertBarber(b);
+        }
+        for (const b of newBarbers) {
+          if (!prevIds.has(b.id)) continue;
+          const original = prev.find((p) => p.id === b.id);
+          if (original && JSON.stringify(original) !== JSON.stringify(b)) {
+            await mutations.updateBarber(b);
+          }
+        }
+        await refresh();
+      } catch (e) {
+        console.error('barber update failed', e);
+        showToast(
+          e instanceof Error ? e.message : 'Не удалось сохранить изменения барберов',
+          'error',
+        );
+        await refresh();
+        throw e;
       }
-      await refresh();
     },
     [data.barbers, refresh],
   );
@@ -140,8 +174,10 @@ export function AppDataProvider({
     () => ({
       ...data,
       loading,
+      authReady,
       user,
       refresh,
+      refreshUser,
       handleUpdateBarberInfo,
       handleAddNewAppointment,
       handleUpdateAppointments,
@@ -152,8 +188,10 @@ export function AppDataProvider({
     [
       data,
       loading,
+      authReady,
       user,
       refresh,
+      refreshUser,
       handleUpdateBarberInfo,
       handleAddNewAppointment,
       handleUpdateAppointments,

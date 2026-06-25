@@ -91,6 +91,29 @@ func (a *API) postBarber(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]string{"id": body.ID})
 }
 
+func (a *API) deleteBarber(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	if id == "" {
+		writeError(w, http.StatusBadRequest, "id required")
+		return
+	}
+	ctx := r.Context()
+	tag, err := a.pool.Exec(ctx, `DELETE FROM barbers WHERE id = $1`, id)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	if tag.RowsAffected() == 0 {
+		writeError(w, http.StatusNotFound, "barber not found")
+		return
+	}
+	a.invalidateCollate(w, r, "barbers")
+	a.invalidateCollate(w, r, "appointments")
+	a.invalidateCollate(w, r, "invoices")
+	a.invalidateCollate(w, r, "cash_logs")
+	writeJSON(w, http.StatusOK, map[string]string{"id": id})
+}
+
 type appointmentBody struct {
 	ID            string  `json:"id"`
 	BarberID      string  `json:"barber_id"`

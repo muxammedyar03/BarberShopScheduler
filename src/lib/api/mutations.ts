@@ -61,6 +61,7 @@ export function cashLogToBody(l: CashLog) {
 export const mutations = {
   upsertBarber: (b: Barber) => api.post<{ id: string }>('/api/v1/barbers', barberToBody(b)),
   updateBarber: (b: Barber) => api.put<{ id: string }>(`/api/v1/barbers/${b.id}`, barberToBody(b)),
+  deleteBarber: (id: string) => api.delete<{ id: string }>(`/api/v1/barbers/${id}`),
   createAppointment: (a: Appointment) =>
     api.post<{ id: string }>('/api/v1/appointments', appointmentToBody(a)),
   updateAppointment: (a: Appointment) =>

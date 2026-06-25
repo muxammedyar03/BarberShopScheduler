@@ -5,15 +5,16 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   Scissors,
-  Users,
-  Building,
   LogOut,
   ChevronLeft,
   Menu,
   User,
+  Shield,
 } from 'lucide-react';
-import type { SessionUser, UserRole } from '@/lib/auth/session';
-import { clearSession, loginAsDemo } from '@/lib/auth/session';
+import type { SessionUser } from '@/lib/auth/session';
+import { logoutSession } from '@/lib/auth/client';
+import { notifySessionChange } from '@/lib/auth/session';
+import { getNavItems, roleLabel } from '@/lib/auth/roles';
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -21,30 +22,20 @@ interface SidebarProps {
   user: SessionUser | null;
 }
 
-const navItems = [
-  { id: 'client', href: '/client', label: 'Клиент', icon: Users, roles: ['client', 'barber', 'admin'] },
-  { id: 'barber', href: '/barber', label: 'Мастер', icon: Scissors, roles: ['barber', 'admin'] },
-  { id: 'owner', href: '/owner', label: 'Владелец', icon: Building, roles: ['admin'] },
-];
+const navIcons = {
+  client: User,
+  barber: Scissors,
+  owner: Shield,
+} as const;
 
 export default function Sidebar({ isCollapsed, setIsCollapsed, user }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const userRole: UserRole = user?.role || 'client';
-  const filteredItems = navItems.filter((item) =>
-    (item.roles as UserRole[]).includes(userRole),
-  );
+  const filteredItems = getNavItems(user?.role ?? null);
 
-  const handleDemoLogin = (role: UserRole) => {
-    loginAsDemo(role);
-    router.refresh();
-    if (role === 'admin') router.push('/owner');
-    else if (role === 'barber') router.push('/barber');
-    else router.push('/client');
-  };
-
-  const handleLogout = () => {
-    clearSession();
+  const handleLogout = async () => {
+    await logoutSession();
+    notifySessionChange();
     router.push('/client');
     router.refresh();
   };
@@ -73,35 +64,9 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, user }: SidebarPr
       </div>
 
       <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-        {!user && !isCollapsed && (
-          <div className="space-y-2 mb-4 p-3 rounded-xl bg-white/5 border border-white/10">
-            <p className="text-[9px] font-bold text-slate-500 uppercase">Демо вход</p>
-            <button
-              type="button"
-              onClick={() => handleDemoLogin('client')}
-              className="w-full text-left text-xs text-cyan-400 hover:underline"
-            >
-              Клиент
-            </button>
-            <button
-              type="button"
-              onClick={() => handleDemoLogin('barber')}
-              className="w-full text-left text-xs text-cyan-400 hover:underline"
-            >
-              Мастер
-            </button>
-            <button
-              type="button"
-              onClick={() => handleDemoLogin('admin')}
-              className="w-full text-left text-xs text-cyan-400 hover:underline"
-            >
-              Владелец
-            </button>
-          </div>
-        )}
-
         {filteredItems.map((item) => {
           const isActive = pathname === item.href;
+          const Icon = navIcons[item.id as keyof typeof navIcons] ?? User;
           return (
             <Link
               key={item.id}
@@ -112,7 +77,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, user }: SidebarPr
                   : 'text-slate-450 hover:text-slate-200 hover:bg-white/5'
               }`}
             >
-              <item.icon
+              <Icon
                 className={`w-5 h-5 transition-colors ${isActive ? 'text-cyan-400' : 'group-hover:text-cyan-400'}`}
               />
               {!isCollapsed && <span className="font-bold text-xs">{item.label}</span>}
@@ -136,25 +101,25 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, user }: SidebarPr
               <div className="flex-1 min-w-0">
                 <p className="text-[11px] font-bold text-white truncate">{user.displayName}</p>
                 <p className="text-[9px] text-slate-500 truncate uppercase tracking-wider">
-                  {user.role}
+                  {roleLabel(user.role)}
                 </p>
               </div>
             )}
           </div>
         )}
 
-        <button
-          type="button"
-          onClick={user ? handleLogout : () => handleDemoLogin('client')}
-          className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${
-            isCollapsed ? 'justify-center' : ''
-          } text-slate-450 hover:text-rose-400 hover:bg-rose-500/5`}
-        >
-          {user ? <LogOut className="w-5 h-5" /> : <User className="w-5 h-5" />}
-          {!isCollapsed && (
-            <span className="font-bold text-xs">{user ? 'Выйти' : 'Войти (демо)'}</span>
-          )}
-        </button>
+        {user && user.role !== 'client' && (
+          <button
+            type="button"
+            onClick={handleLogout}
+            className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${
+              isCollapsed ? 'justify-center' : ''
+            } text-slate-450 hover:text-rose-400 hover:bg-rose-500/5`}
+          >
+            <LogOut className="w-5 h-5" />
+            {!isCollapsed && <span className="font-bold text-xs">Выйти</span>}
+          </button>
+        )}
       </div>
     </aside>
   );

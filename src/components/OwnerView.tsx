@@ -30,7 +30,7 @@ import { Barber, Invoice, Appointment, CashLog } from '../types';
 
 interface OwnerViewProps {
   barbers: Barber[];
-  onUpdateBarbers: (newBarbers: Barber[]) => void;
+  onUpdateBarbers: (newBarbers: Barber[]) => void | Promise<void>;
   invoices: Invoice[];
   onUpdateInvoices: (newInvoices: Invoice[]) => void;
   appointments: Appointment[];
@@ -108,13 +108,23 @@ export default function OwnerView({
   };
 
   // 2. Delete Barber handler
-  const handleDeleteBarber = (id: string, name: string) => {
-    if (window.confirm(`Вы уверены, что хотите полностью удалить барбера ${name}? Все его настройки будут удалены.`)) {
-      onUpdateBarbers(barbers.filter(b => b.id !== id));
-      if (selectedBarberDetail?.id === id) {
-        setSelectedBarberDetail(null);
-      }
-      showToast(`Барбер ${name} успешно удален из базы`, 'info');
+  const handleDeleteBarber = async (id: string, name: string) => {
+    if (
+      !window.confirm(
+        `Вы уверены, что хотите полностью удалить барбера ${name}? Все записи, счета и касса этого мастера также будут удалены.`,
+      )
+    ) {
+      return;
+    }
+    if (selectedBarberDetail?.id === id) {
+      setSelectedBarberDetail(null);
+    }
+    const next = barbers.filter((b) => b.id !== id);
+    try {
+      await onUpdateBarbers(next);
+      showToast(`Барбер ${name} успешно удален из базы`, 'success');
+    } catch {
+      showToast(`Не удалось удалить барбера ${name}`, 'error');
     }
   };
 

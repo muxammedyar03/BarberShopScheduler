@@ -25,9 +25,12 @@ func New(coll *collate.Runner, c *cache.Store, pool *pgxpool.Pool) *API {
 
 func (a *API) Register(mux *http.ServeMux) {
 	mux.HandleFunc("GET /health", a.health)
+	mux.HandleFunc("POST /api/v1/auth/login", a.postLogin)
+	mux.HandleFunc("GET /api/v1/auth/me", a.withAuth(a.getMe))
 	mux.HandleFunc("POST /api/v1/collate/{resource}", a.postCollate)
 	mux.HandleFunc("GET /api/v1/barbers/{id}", a.getBarber)
 	mux.HandleFunc("PUT /api/v1/barbers/{id}", a.putBarber)
+	mux.HandleFunc("DELETE /api/v1/barbers/{id}", a.deleteBarber)
 	mux.HandleFunc("POST /api/v1/barbers", a.postBarber)
 	mux.HandleFunc("GET /api/v1/appointments/barber/{barberId}", a.listAppointmentsByBarber)
 	mux.HandleFunc("POST /api/v1/appointments", a.postAppointment)

@@ -60,6 +60,17 @@ export const api = {
     return api.send<T>('PUT', path, body, init);
   },
 
+  async delete<T>(path: string, init?: RequestInit): Promise<T> {
+    const res = await fetch(`${baseUrl()}${path}`, {
+      ...init,
+      method: 'DELETE',
+      headers: { Accept: 'application/json', ...init?.headers },
+      cache: 'no-store',
+      next: init?.next ?? { revalidate: 0 },
+    });
+    return parseJSON<T>(res);
+  },
+
   async send<T>(method: string, path: string, body: unknown, init?: RequestInit): Promise<T> {
     const res = await fetch(`${baseUrl()}${path}`, {
       ...init,
@@ -69,7 +80,7 @@ export const api = {
         'Content-Type': 'application/json',
         ...init?.headers,
       },
-      body: JSON.stringify(body),
+      body: body === undefined ? undefined : JSON.stringify(body),
       cache: 'no-store',
       next: init?.next ?? { revalidate: 0 },
     });

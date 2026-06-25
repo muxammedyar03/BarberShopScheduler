@@ -32,6 +32,7 @@ import { Barber, Appointment, CashLog, PaymentMethod, ClientCategory, BarberStat
 
 interface BarberViewProps {
   barbers: Barber[];
+  linkedBarberId?: string;
   onUpdateBarberInfo: (updated: Barber) => void;
   appointments: Appointment[];
   onUpdateAppointments: (newAppointments: Appointment[]) => void;
@@ -41,14 +42,16 @@ interface BarberViewProps {
 
 export default function BarberView({
   barbers,
+  linkedBarberId,
   onUpdateBarberInfo,
   appointments,
   onUpdateAppointments,
   cashLogs,
   onUpdateCashLogs,
 }: BarberViewProps) {
-  // 1. Selector to simulate logging in as different barbers
-  const [selectedBarberId, setSelectedBarberId] = useState<string>(barbers[0]?.id || '');
+  const [selectedBarberId, setSelectedBarberId] = useState<string>(
+    linkedBarberId ?? barbers[0]?.id ?? '',
+  );
   const activeBarber = barbers.find(b => b.id === selectedBarberId) || barbers[0];
 
   // Active navigation tab on the barber screen
@@ -359,18 +362,22 @@ export default function BarberView({
           />
           <div>
             <label className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">Кабинет мастера</label>
-            <select
-              value={selectedBarberId}
-              onChange={(e) => {
-                setSelectedBarberId(e.target.value);
-                setActiveTab('queue');
-              }}
-              className="font-bold text-white text-base bg-transparent border-b border-cyan-400/50 outline-none cursor-pointer hover:border-cyan-400 pb-0.5"
-            >
-              {barbers.map(b => (
-                <option key={b.id} value={b.id} className="bg-[#0e1224] text-white">{b.name} {b.isBlocked ? '(Заблокирован)' : ''}</option>
-              ))}
-            </select>
+            {linkedBarberId ? (
+              <p className="font-bold text-white text-base">{activeBarber.name}</p>
+            ) : (
+              <select
+                value={selectedBarberId}
+                onChange={(e) => {
+                  setSelectedBarberId(e.target.value);
+                  setActiveTab('queue');
+                }}
+                className="font-bold text-white text-base bg-transparent border-b border-cyan-400/50 outline-none cursor-pointer hover:border-cyan-400 pb-0.5"
+              >
+                {barbers.map(b => (
+                  <option key={b.id} value={b.id} className="bg-[#0e1224] text-white">{b.name} {b.isBlocked ? '(Заблокирован)' : ''}</option>
+                ))}
+              </select>
+            )}
           </div>
         </div>
 

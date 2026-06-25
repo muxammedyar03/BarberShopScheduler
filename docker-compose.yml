@@ -10,6 +10,8 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./api/db/migrations/001_init.sql:/docker-entrypoint-initdb.d/001_init.sql:ro
+      - ./api/db/migrations/002_users_auth.sql:/docker-entrypoint-initdb.d/002_users_auth.sql:ro
+      - ./api/db/seed_users.sql:/docker-entrypoint-initdb.d/003_seed_users.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U barber -d barber_queue"]
       interval: 5s
@@ -35,6 +37,7 @@ services:
       DATABASE_URL: postgres://barber:barber@postgres:5432/barber_queue?sslmode=disable
       REDIS_URL: redis://redis:6379/0
       CORS_ORIGIN: http://localhost:3000
+      JWT_SECRET: ${JWT_SECRET:-dev-only-change-me-use-32-char-minimum-secret!!}
     depends_on:
       postgres:
         condition: service_healthy
@@ -50,6 +53,7 @@ services:
     environment:
       API_URL: http://api:8080
       NEXT_PUBLIC_API_URL: http://localhost:10120
+      JWT_SECRET: ${JWT_SECRET:-dev-only-change-me-use-32-char-minimum-secret!!}
     depends_on:
       - api
 

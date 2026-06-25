@@ -5,6 +5,7 @@ import { useAppData } from '@/providers/AppDataProvider';
 
 export default function BarberPage() {
   const {
+    user,
     barbers,
     appointments,
     cashLogs,
@@ -13,13 +14,25 @@ export default function BarberPage() {
     handleUpdateCashLogs,
   } = useAppData();
 
+  const linkedBarberId = user?.barberId;
+  const visibleBarbers = linkedBarberId
+    ? barbers.filter((b) => b.id === linkedBarberId)
+    : barbers;
+  const visibleAppointments = linkedBarberId
+    ? appointments.filter((a) => a.barberId === linkedBarberId)
+    : appointments;
+  const visibleCashLogs = linkedBarberId
+    ? cashLogs.filter((l) => l.barberId === linkedBarberId)
+    : cashLogs;
+
   return (
     <BarberView
-      barbers={barbers}
+      barbers={visibleBarbers.length > 0 ? visibleBarbers : barbers}
+      linkedBarberId={linkedBarberId}
       onUpdateBarberInfo={handleUpdateBarberInfo}
-      appointments={appointments}
+      appointments={visibleAppointments}
       onUpdateAppointments={handleUpdateAppointments}
-      cashLogs={cashLogs}
+      cashLogs={visibleCashLogs}
       onUpdateCashLogs={handleUpdateCashLogs}
     />
   );

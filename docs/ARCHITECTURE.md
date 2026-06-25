@@ -61,7 +61,7 @@ docker compose up -d --build
 
 ## Next steps
 
-- [ ] Wire `App.tsx` off Firebase → Collections
-- [ ] Auth (Google → JWT + users table)
-- [ ] sqlc CRUD handlers for mutations
+- [x] PostgreSQL + Go API (Firebase olib tashlangan)
+- [ ] Auth (JWT + `users` jadvali, staff login API)
+- [ ] sqlc generated CRUD (hozir raw SQL mutations)
 - [ ] SSE for queue updates

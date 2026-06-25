@@ -5,12 +5,13 @@ import { Info, ChevronRight } from 'lucide-react';
 import Sidebar from '@/components/Sidebar';
 import Toast from '@/components/Toast';
 import { useAppData } from '@/providers/AppDataProvider';
+import { roleLabel } from '@/lib/auth/roles';
 import { usePathname } from 'next/navigation';
 
 const titles: Record<string, string> = {
   '/client': 'Бронирование',
-  '/barber': 'Моя Очередь',
-  '/owner': 'Управление Бизнесом',
+  '/barber': 'Панель мастера',
+  '/owner': 'Super Admin',
 };
 
 export default function DashboardShell({ children }: { children: React.ReactNode }) {
@@ -59,10 +60,11 @@ export default function DashboardShell({ children }: { children: React.ReactNode
             >
               <Info className="w-5 h-5" />
               <div className="absolute top-full right-0 mt-2 w-64 p-3 bg-slate-900 border border-white/10 rounded-xl shadow-2xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity text-[10px] lowercase normal-case leading-relaxed z-50">
-                💡 <b>Ролевая модель:</b> Ваша текущая роль — <b>{user?.role || 'гость'}</b>.
+                💡 <b>Ролевая модель:</b> Ваша текущая роль —{' '}
+                <b>{user ? roleLabel(user.role) : 'гость'}</b>.
                 {user?.role === 'client' && ' Вы можете записываться к мастерам.'}
-                {user?.role === 'barber' && ' Управляйте своей очередью и финансами.'}
-                {user?.role === 'admin' && ' Доступ ко всем инструментам владельца.'}
+                {user?.role === 'barber' && ' Очередь, клиенты и касса.'}
+                {user?.role === 'admin' && ' Управление барберами, финансами и бизнесом.'}
               </div>
             </button>
           </div>

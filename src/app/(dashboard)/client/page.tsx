@@ -6,10 +6,12 @@ import { useAppData } from '@/providers/AppDataProvider';
 export default function ClientPage() {
   const { barbers, appointments, handleAddNewAppointment } = useAppData();
   return (
-    <ClientView
-      barbers={barbers}
-      appointments={appointments}
-      onAddNewAppointment={handleAddNewAppointment}
-    />
+    <div className="space-y-6">
+      <ClientView
+        barbers={barbers}
+        appointments={appointments}
+        onAddNewAppointment={handleAddNewAppointment}
+      />
+    </div>
   );
 }
